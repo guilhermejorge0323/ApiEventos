@@ -18,6 +18,9 @@ module.exports = {
             telefone: {
                 type: Sequelize.STRING
             },
+            cpf: {
+                type: Sequelize.STRING,
+            },
             ativo: {
                 type: Sequelize.BOOLEAN
             },
@@ -28,6 +31,10 @@ module.exports = {
             updatedAt: {
                 allowNull: false,
                 type: Sequelize.DATE
+            },
+            deletedAt: {
+                type: Sequelize.DATE,
+                allowNull: true
             }
         });
     },
