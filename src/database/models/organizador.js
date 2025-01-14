@@ -1,4 +1,8 @@
 'use strict';
+
+const validadorCpf = require('../../utils/validadorCpf');
+const validadorTelefone = require('../../utils/validadorTelefone');
+
 const {
     Model
 } = require('sequelize');
@@ -13,17 +17,80 @@ module.exports = (sequelize, DataTypes) => {
         }
     }
     Organizador.init({
-        nome: DataTypes.STRING,
-        email: DataTypes.STRING,
-        cpf: DataTypes.STRING,
-        telefone: DataTypes.STRING,
+        nome: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: {
+                    args: true,
+                    msg: 'E Requerido o nome do organizador'
+                },
+                len: {
+                    args: [3, 70],
+                    msg: 'O nome do organizador deve ter entre 3 e 70 caracteres'
+                }
+            }
+        },
+        email: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+            validate: {
+                notEmpty: {
+                    args: true,
+                    msg: 'E Requerido o email do organizador'
+                },
+                isEmail: {
+                    args: true,
+                    msg: 'O email e invalido siga o modelo aaaaaa@aaaaa.com'
+                }
+            }
+        },
+        cpf: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+            validate: {
+                notEmpty: {
+                    args: true,
+                    msg: 'E Requerido o CPF do organizador'
+                },
+                cpfValido: (cpf) => {
+                    if (!validadorCpf(cpf)) throw new Error('CPF nao e valido');
+                }
+            }
+        },
+        telefone: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+            validate: {
+                notEmpty: {
+                    args: true,
+                    msg: 'E Requerido o telefone do organizador'
+                },
+                telefoneValido: (telefone) => {
+                    if (!validadorTelefone(telefone)) throw new Error('Telefone nao e valido');
+                }
+            }
+        },
         ativo: DataTypes.BOOLEAN,
         deletedAt: DataTypes.DATE,
     }, {
         sequelize,
         modelName: 'Organizador',
         tableName: 'organizadores',
-        paranoid: true
+        paranoid: true,
+        hooks: {
+            beforeCreate: (organizador) => {
+                organizador.cpf = validadorCpf(organizador.cpf);
+                organizador.telefone = validadorTelefone(organizador.telefone);
+            },
+            beforeUpdate: (organizador) => {
+                organizador.cpf = validadorCpf(organizador.cpf);
+                organizador.telefone = validadorTelefone(organizador.telefone);
+            }
+        }
     });
     // Hook para destruir todos os eventos associados ao organizador quando um organizador for deletado
     Organizador.beforeDestroy(async (organizador, options) => {

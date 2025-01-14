@@ -1,4 +1,5 @@
 const convertIds = require('../utils/convertIds');
+const db = require('../database/models');
 
 
 class Controller {
@@ -41,10 +42,13 @@ class Controller {
 
     async postRegister(req, res){
         const data = req.body;
+        const transaction = await db.sequelize.transaction();
         try {
-            const register = await this.service.createRegister(data);
+            const register = await this.service.createRegister(data, {transaction: transaction});
+            transaction.commit();
             res.status(201).json({ message: 'Registro criado com sucesso', registro: register });
         } catch (error) {
+            transaction.rollback();
             res.json(error.message);
             console.log(error);
         }
@@ -54,15 +58,18 @@ class Controller {
         const data = req.body;
         const { ...params } = req.params;
         const where = convertIds(params);
+        const transaction = await db.sequelize.transaction();
         try {
-            const register = await this.service.updateRegister(data,where);
+            const register = await this.service.updateRegister(data,where,transaction);
             console.log(register);
             if(!register){
-                throw new Error('Nao atualizado');
+                transaction.rollback();
+                throw new Error('Nenhum registro atualizado atualizado');
             }
-
+            transaction.commit();
             res.status(200).json({ message: `Registro de id:${where} atualizado com sucesso`});
         } catch (error) {
+            transaction.rollback();
             res.json(error.message);
             console.log(error);
         }

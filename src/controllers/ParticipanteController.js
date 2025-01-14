@@ -1,6 +1,7 @@
 const Controller = require('./Controller');
 const ParticipanteService = require('../services/ParticipanteService');
 const EventoService = require('../services/EventoService');
+const db = require('../database/models');
 
 const participanteService = new ParticipanteService();
 
@@ -40,13 +41,16 @@ class ParticipanteController extends Controller {
         const { evento_id } = req.params;
         const evento = await this.eventoService.getById(evento_id);
         const { participante, ingresso} = req.body;
+        const transaction = await db.sequelize.transaction();
         try {
             if(!evento){
                 throw new Error('Evento não encontrado');
             }
-            const register = await participanteService.createRegister({...participante,evento_id: Number(evento_id)},{ingresso});
+            const register = await participanteService.createRegister({...participante,evento_id: Number(evento_id)},{ingresso,transaction});
+            transaction.commit();
             res.status(201).json({ message: 'Registro criado com sucesso', registro: register });
         } catch (error) {
+            transaction.rollback();
             res.send(error.message);
             console.log(error);
         }
