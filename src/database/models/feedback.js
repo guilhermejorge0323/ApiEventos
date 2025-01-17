@@ -43,12 +43,10 @@ module.exports = (sequelize, DataTypes) => {
                 }
             }
         },
-        deletedAt: DataTypes.DATE,
     }, {
         sequelize,
         modelName: 'FeedBack',
         tableName: 'feedbacks',
-        paranoid: true,
     });
     return FeedBack;
 };

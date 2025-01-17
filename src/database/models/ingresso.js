@@ -1,4 +1,5 @@
 'use strict';
+const ReqIncorreta = require('../../errors/ReqIncorreta');
 
 const validaPreco = require('../../utils/validadorPreco');
 
@@ -42,7 +43,6 @@ module.exports = (sequelize, DataTypes) => {
             },
         },
         ativo: DataTypes.BOOLEAN,
-        deletedAt: DataTypes.DATE,
     }, {
         sequelize,
         modelName: 'Ingresso',
@@ -54,6 +54,10 @@ module.exports = (sequelize, DataTypes) => {
             },
             beforeUpdate: (ingresso) => {
                 ingresso.preco = validaPreco(ingresso.preco);
+                //impedir de mudar o evento_id
+                if(ingresso.changed('participante_id') || ingresso.changed('evento_id')){
+                    throw new ReqIncorreta('Não é possivel alterar o evento_id ou o participante_id');
+                }
             }
         }
     });

@@ -1,4 +1,7 @@
 'use strict';
+const Erro404 = require('../../errors/Erro404');
+const { ValidationError } = require('sequelize');
+
 const {
     Model,
     where
@@ -87,31 +90,29 @@ module.exports = (sequelize, DataTypes) => {
                 }
             }
         },
-        deletedAt: DataTypes.DATE,
     }, {
         sequelize,
         modelName: 'Evento',
         tableName: 'eventos',
-        paranoid: true,
         hooks: {
             beforeCreate: async (evento) => {
-                // valida se o organizador existe
-                const organizador = await sequelize.models.Organizador.findByPk(evento.organizador_id);
+                // valida se o organizador existe e esta ativo
+                const organizador = await sequelize.models.Organizador.scope('ativos').findByPk(evento.organizador_id);
                 if(!organizador){
-                    throw new Error('Organizador não encontrado');
+                    throw new Erro404('Organizador não encontrado ou inativo');
                 }
 
                 // valida se as datas de inicio e fim do evento
                 if(new Date(evento.data_inicio) > new Date(evento.data_fim)){
-                    throw new Error('A data de início do evento não pode ser posterior à data de término');
+                    throw new ValidationError('A data de início do evento não pode ser posterior à data de término');
                 }
             },
 
             beforeUpdate: async (evento) => {
                 // valida se o organizador existe
-                const organizador = await sequelize.models.Organizador.findByPk(evento.organizador_id);
+                const organizador = await sequelize.models.Organizador.scope('ativos').findByPk(evento.organizador_id);
                 if(!organizador){
-                    throw new Error('Organizador não encontrado');
+                    throw new Error('Organizador não encontrado ou inativo');
                 }
 
                 // valida se as datas de inicio e fim do evento
@@ -121,7 +122,7 @@ module.exports = (sequelize, DataTypes) => {
                 const dataFim = evento.data_fim || eventoAtual.data_fim;
 
                 if(new Date(dataInicio) > new Date(dataFim)){
-                    throw new Error('A data inicio nao deve ser maior que a data fim');
+                    throw new ValidationError('A data inicio nao deve ser maior que a data fim');
                 }
             }
         }

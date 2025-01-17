@@ -1,6 +1,9 @@
 'use strict';
 
+
 const validadorTelefone = require('../../utils/validadorTelefone');
+const validadorLetras = require('../../utils/validadorLetras');
+const { ValidationError } = require('sequelize');
 
 const {
     Model
@@ -37,13 +40,19 @@ module.exports = (sequelize, DataTypes) => {
                 len: {
                     args: [3, 100],
                     msg: 'Nome do participante deve ter entre 3 e 100 caracteres.',
+                },
+                nomeValido: (nome) => {
+                    if(!validadorLetras(nome)) throw new ValidationError('E permitido apenas letras no nome');
                 }
             }
         },
         email: {
             type: DataTypes.STRING,
             allowNull: false,
-            unique: true,
+            unique: {
+                type:true,
+                msg: 'Email ja cadastrado'
+            },
             validate: {
                 notEmpty: {
                     args: true,
@@ -61,22 +70,33 @@ module.exports = (sequelize, DataTypes) => {
             unique: true,
             validate: {
                 telefoneValido: (telefone) => {
-                    if(!validadorTelefone(telefone)) throw new Error('Telefone invalido');
+                    if(!validadorTelefone(telefone)) throw new ValidationError('Telefone invalido');
                 }
             }
         },
-        deletedAt: DataTypes.DATE,
     }, {
         sequelize,
         modelName: 'Participante',
         tableName: 'participantes',
-        paranoid: true,
         hooks: {
             beforeCreate: (participante) => {
                 participante.telefone = validadorTelefone(participante.telefone);
             },
-            beforeUpdate: (participante) => {
+            beforeUpdate: async (participante) => {
                 participante.telefone = validadorTelefone(participante.telefone);
+
+                // Ao mudar evento id no participante mudar tambem no ingresso
+                if(participante.changed('evento_id')){
+                    await sequelize.models.Ingresso.update(
+                        { evento_id: participante.evento_id },
+                        { where: { participante_id: participante.id } },
+                    );
+
+                    await sequelize.models.FeedBack.update(
+                        { evento_id: participante.evento_id },
+                        { where: { participante_id: participante.id } },
+                    );
+                }
             }
         }
     });
@@ -96,7 +116,11 @@ module.exports = (sequelize, DataTypes) => {
                 participante_id: participante.id,
             }, {transaction: transaction});
         } catch (error) {
-            throw new Error('Erro ao criar o ingresso' + error.message);
+            console.log(error);
+            if (error instanceof ValidationError) {
+                throw new ValidationError(error.message, error.errors);
+            }
+            throw error;
         }
     });
 

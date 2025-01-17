@@ -1,4 +1,5 @@
 const Service = require('./Service');
+const Erro404 = require('../errors/Erro404');
 
 class EventoService extends Service {
     constructor(){
@@ -8,7 +9,7 @@ class EventoService extends Service {
     async getParticipantesEvento(id){
         const evento = await super.getById(id);
         if(!evento){
-            throw new Error('Evento não encontrado');
+            throw new Erro404('Evento não encontrado');
         }
         const listaParticipantes = await evento.getParticipantesDoEvento();
         return listaParticipantes;
@@ -17,7 +18,7 @@ class EventoService extends Service {
     async getIngressosEvento(id){
         const evento = await super.getById(id);
         if(!evento){
-            throw new Error('Evento não encontrado');
+            throw new Erro404('Evento não encontrado');
         }
         const listaIngressos = await evento.getIngressosDoEvento();
         return listaIngressos;
@@ -26,7 +27,7 @@ class EventoService extends Service {
     async getFeedBacksEvento(id){
         const evento = await super.getById(id);
         if(!evento){
-            throw new Error('Evento não encontrado');
+            throw new Erro404('Evento não encontrado');
         }
         const listaFeedbacks = await evento.getFeedbacksDoEvento();
         return listaFeedbacks;
