@@ -5,97 +5,87 @@
 
 *Modelo:* !['Modelo imagem'](readMe/image.png)
 
+---
+
 #### Funções:
-- **Organizador:**
-  - GET todos os organizadores ativos (/organizador)
-  - GET organizadores inativos (/organizador/inativo)
-  - GET organizadores ativos e inativos (/organizador/todos)
-  - GET organizador específico por ID (/organizador)
 
-  - POST organizador (/organizador)
-    - Modelo:
-            | Nome     | STRING  | Deve ter entre 3 e 70 caracteres                            |
-            | Email    | STRING  | Deve ser único e ser um e-mail válido                      |
-            | CPF      | STRING  | Deve ser único e um CPF válido (formatado automaticamente) |
-            | Telefone | STRING  | Deve ser único e válido (formatado automaticamente)        |
-            | Ativo    | BOOLEAN | Deve ser true ou false                                     |
+### **Organizador**
+- **Endpoints:**
+  - `GET /organizador`  
+    Retorna todos os organizadores ativos.
 
-  - PUT (/organizador/:id)
-  - DELETE (/organizador/:id) Cascade apaga todos os registros relacionados
+  - `GET /organizador/inativo`  
+    Retorna todos os organizadores inativos.
 
-- **Evento:**
-  - GET todos os eventos (/evento)
-  - GET todos os eventos de um organizador (/organizador/:organizador_id/evento)
-  - GET evento por ID (/evento/:id)
-  - GET evento de um organizador por ID (/organizador/:organizador_id/evento/:id)
-  - POST evento (/evento)
-  - POST evento para um organizador (ID inserido automaticamente) (/organizador/:organizador_id/evento)
-    - Modelo:
-            | Nome           | STRING   | Deve ter entre 2 e 100 caracteres                               |
-            | descricao      | STRING   | Deve ter entre 3 e 500 caracteres                               |
-            | data_inicio    | DATEONLY | Deve ser uma data no formato yyyy-mm-dd e ser menor que data_fim |
-            | data_fim       | DATEONLY | Deve ser uma data no formato yyyy-mm-dd e ser maior que data_inicio |
-            | organizador_id | INTEGER  | Deve ser o ID de um organizador existente                       |
+  - `GET /organizador/todos`  
+    Retorna todos os organizadores (ativos e inativos).
 
-  - PUT (/evento/:id)
-  - PUT evento de um organizador (/organizador/:organizador_id/evento/:id)
-  - DELETE (/evento/:id) Cascade apaga todos os registros relacionados
-  - DELETE apaga evento de organizador (/organizador/:organizador_id/evento/:id) Cascade apaga todos os registros relacionados
+  - `GET /organizador/:id`  
+    Retorna um organizador específico pelo ID.
 
-- **Participante:**
-  - GET todos os participantes de um evento (/evento/:evento_id/participante)
-  - GET participante específico por evento e ID (/evento/:evento_id/participante/:id)
-  - POST participante (/evento/:evento_id/participante)
-    - Modelo:
-            - Cria ingresso automaticamente. Deve ser enviado no seguinte formato:
-            ```json
-            {
-                "participante": {},
-                "ingresso": {}
-            }
-            ```
+  - `POST /organizador`  
+    Cria um novo organizador.  
+    **Modelo:**
+    | Campo     | Tipo    | Requisitos                                                    |
+    |-----------|---------|--------------------------------------------------------------|
+    | Nome      | STRING  | Deve ter entre 3 e 70 caracteres                              |
+    | Email     | STRING  | Deve ser único e ser um e-mail válido                         |
+    | CPF       | STRING  | Deve ser único e ser um CPF válido (formatado automaticamente)|
+    | Telefone  | STRING  | Deve ser único e válido (formatado automaticamente)           |
+    | Ativo     | BOOLEAN | Deve ser true ou false                                        |
 
-            | Nome      | STRING  | Deve ter entre 2 e 100 caracteres                    |
-            | Email     | STRING  | Deve ser único e ser um e-mail válido               |
-            | Telefone  | STRING  | Deve ser único e válido (formatado automaticamente) |
-            | evento_id | INTEGER | Deve ser o ID de um evento existente                |
+  - `PUT /organizador/:id`  
+    Atualiza os dados de um organizador específico.
 
-  - PUT (/evento/:evento_id/participante/:id)
-  - DELETE (/evento/:evento_id/participante/:id) Cascade apaga todos os registros relacionados
+  - `DELETE /organizador/:id`  
+    Exclui o organizador especificado e apaga todos os registros relacionados (cascade delete).
 
-- **Ingresso:**
-  - GET todos os ingressos de um evento (/evento/:evento_id/ingresso/)
-  - GET ingresso do participante (/evento/:evento_id/participante/:participante_id/ingresso)
-  - POST ingresso (/evento/:evento_id/participante)
-    - Modelo:
+---
 
-            | Tipo            | STRING   | Deve ser NORMAL | VIP | CAMAROTE                                 |
-            | preco           | STRING   | Deve ser um preço válido (formatado automaticamente)          |
-            | ativo           | BOOLEAN  | Deve ser true ou false                                      |
-            | evento_id       | INTEGER  | Deve ser o ID de um evento existente (preenchido automaticamente) |
-            | participante_id | INTEGER  | Deve ser o ID de um participante existente (preenchido automaticamente)|
+### **Evento**
+- **Endpoints:**
+  - `GET /evento`  
+    Retorna todos os eventos.
 
-  - PUT (/evento/:evento_id/participante/:participante_id/ingresso/) Não pode alterar os IDs
-  - PUT (/evento/:evento_id/participante/:participante_id/ingresso/desativar) Desativa o ingresso
+  - `GET /organizador/:organizador_id/evento`  
+    Retorna todos os eventos associados a um organizador.
 
-- **FeedBack:**
-  - GET todos os feedbacks de um evento (/evento/:evento_id/feedback)
-  - GET todos os feedbacks do participante (/evento/:evento_id/participante/:participante_id/feedback/)
-  - GET feedback do participante (/evento/:evento_id/participante/:participante_id/feedback/:id)
-  - POST feedback (/evento/:evento_id/participante/:participante_id/feedback)
-    - Modelo:
+  - `GET /evento/:id`  
+    Retorna informações de um evento específico pelo ID.
 
-            | comentario      | STRING   | Deve ter entre 3 e 500 caracteres                                 |
-            | nota            | INTEGER  | Deve estar entre 0 e 5                                            |
-            | evento_id       | INTEGER  | Deve ser o ID de um evento existente (preenchido automaticamente) |
-            | participante_id | INTEGER  | Deve ser o ID de um participante existente (preenchido automaticamente)|
+  - `GET /organizador/:organizador_id/evento/:id`  
+    Retorna um evento específico de um organizador.
 
-  - PUT (/evento/:evento_id/participante/:participante_id/feedback/:id)
-  - DELETE (/evento/:evento_id/participante/:participante_id/feedback/:id)
+  - `POST /evento`  
+    Cria um novo evento.  
+    **Modelo:**
+    | Campo          | Tipo      | Requisitos                                                    |
+    |----------------|-----------|----------------------------------------------------------------|
+    | Nome           | STRING    | Deve ter entre 2 e 100 caracteres                              |
+    | descricao      | STRING    | Deve ter entre 3 e 500 caracteres                              |
+    | data_inicio    | DATEONLY  | Deve ser uma data no formato yyyy-mm-dd e ser menor que data_fim |
+    | data_fim       | DATEONLY  | Deve ser uma data no formato yyyy-mm-dd e ser maior que data_inicio |
+    | organizador_id | INTEGER   | Deve ser o ID de um organizador existente                      |
+
+  - `POST /organizador/:organizador_id/evento`  
+    Cria um evento associado a um organizador específico.  
+    (O ID do organizador é preenchido automaticamente).
+
+  - `PUT /evento/:id`  
+    Atualiza os dados de um evento específico.
+
+  - `PUT /organizador/:organizador_id/evento/:id`  
+    Atualiza os dados de um evento específico associado a um organizador.
+
+  - `DELETE /evento/:id`  
+    Exclui um evento e apaga todos os registros relacionados (cascade delete).
+
+  - `DELETE /organizador/:organizador_id/evento/:id`  
+    Exclui um evento de um organizador específico e apaga todos os registros relacionados (cascade delete).
 
 ---
 
 ### Observações:
-- **Não usei soft delete**
-- **Dê um `npm i` e instale os pacotes**
-- **Crie seu próprio banco de dados MySQL e conecte**
+- **Não usei soft delete**  
+- **Dê um `npm i` e instale os pacotes**  
+- **Crie seu próprio banco de dados MySQL e conecte**  
